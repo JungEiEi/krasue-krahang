@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+@theme {
+  --color-night: #0c1016;
+  --color-panel: #17130f;
+  --color-bone: #f3ead7;
+  --color-ash: #b5a38c;
+  --color-ember: #e23b2c;
+  --color-lantern: #e0a24a;
+  --font-display: "Charmonman", "Sarabun", serif;
+  --font-sans: "Sarabun", "Noto Sans Thai", sans-serif;
+  --radius-card: 1rem;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html,
+  body {
+    background: var(--color-night);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+  }
+}
+
+.arena {
+  background: #07080c;
+}
+
+.arena-bg {
+  object-fit: cover;
+  filter: saturate(0.9) brightness(0.78);
+}
+
+.vignette {
+  background:
+    radial-gradient(ellipse at center, transparent 40%, rgb(7 8 12 / 0.72) 100%),
+    linear-gradient(to top, rgb(7 8 12 / 0.55), transparent 28%);
+}
+
+.ghost-btn {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  touch-action: manipulation;
+  filter: drop-shadow(0 14px 10px rgb(0 0 0 / 0.45));
+  transition: filter 120ms ease;
+}
+
+.ghost-btn:active {
+  filter: drop-shadow(0 0 16px var(--color-lantern)) brightness(1.2);
+}
+
+.ghost-krasue {
+  width: min(38vw, 210px);
+  filter: drop-shadow(0 0 14px rgb(226 59 44 / 0.45));
+}
+
+.ghost-krahang {
+  width: min(58vw, 300px);
+  filter: drop-shadow(0 16px 10px rgb(0 0 0 / 0.55));
+}
+
+.ghost-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.ghost-caught {
+  animation: catch-pop 420ms ease-out forwards;
+}
+
+.spell {
+  position: absolute;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 999px;
+  border: 2px solid var(--color-lantern);
+  box-shadow:
+    0 0 24px var(--color-ember),
+    inset 0 0 18px rgb(226 59 44 / 0.65);
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: spell-burst 520ms ease-out forwards;
+  pointer-events: none;
+}
+
+.spell-inner {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-color: var(--color-ember);
+  animation-duration: 380ms;
+}
+
+.floater {
+  position: absolute;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.65rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 0.65);
+  transform: translate(-50%, -40%);
+  animation: float-score 700ms ease-out forwards;
+  pointer-events: none;
+}
+
+.floater-krasue {
+  color: var(--color-ember);
+}
+
+.floater-krahang {
+  color: var(--color-lantern);
+}
+
+.arena.is-shaking {
+  animation: shake 180ms linear;
+}
+
+@keyframes catch-pop {
+  0% {
+    opacity: 1;
+    scale: 1;
+  }
+  35% {
+    opacity: 1;
+    scale: 1.12;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+@keyframes spell-burst {
+  to {
+    transform: translate(-50%, -50%) scale(1.7);
+    opacity: 0;
+  }
+}
+
+@keyframes float-score {
+  to {
+    transform: translate(-50%, -180%);
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: -4px 2px;
+  }
+  50% {
+    translate: 3px -2px;
+  }
+  75% {
+    translate: -2px 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena.is-shaking,
+  .ghost-caught,
+  .spell,
+  .floater {
+    animation: none;
+  }
+
+  .ghost-caught {
+    opacity: 0.2;
+  }
+}
