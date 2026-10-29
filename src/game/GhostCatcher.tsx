@@ -67,6 +67,8 @@ type Frame = {
 
 const DURATIONS: Duration[] = [30, 45, 60];
 
+const art = (file: string) => `${import.meta.env.BASE_URL}art/${file}`;
+
 function pointsFor(kind: Kind) {
   if (kind === "krasue") return 10;
   if (kind === "krahang") return 20;
@@ -427,7 +429,7 @@ export function GhostCatcher() {
         aria-label="สนามจับผี"
       >
         <img
-          src="/art/village-night.webp"
+          src={art("village-night.webp")}
           alt=""
           className="arena-bg pointer-events-none absolute inset-0 h-full w-full"
         />
@@ -463,13 +465,9 @@ export function GhostCatcher() {
               disabled={!playing || g.state !== "alive"}
             >
               <img
-                src={
-                  g.kind === "krasue"
-                    ? "/art/krasue.webp"
-                    : g.kind === "krahang"
-                      ? "/art/krahang.webp"
-                      : "/art/poop.webp"
-                }
+                src={art(
+                  g.kind === "krasue" ? "krasue.webp" : g.kind === "krahang" ? "krahang.webp" : "poop.webp",
+                )}
                 alt=""
                 draggable={false}
                 className={`ghost-img ghost-${g.kind}`}
