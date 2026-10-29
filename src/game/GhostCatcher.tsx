@@ -594,6 +594,9 @@ export function GhostCatcher() {
             <span className="sm:hidden">{armedReset ? "ยืนยัน" : "รีเซ็ต"}</span>
           </button>
         </div>
+        <p className="text-center text-xs leading-relaxed text-ash">
+          เกมจับผีกระสือและผีกระหังออนไลน์ เล่นฟรีบนมือถือ ไม่ต้องสมัคร แตะผีให้ทันและอย่าแตะก้อนกับดัก
+        </p>
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ash">
           <p>
             สะสมทั้งหมด กระสือ {frame.lifeK} · กระหัง {frame.lifeH}
