@@ -56,16 +56,6 @@
   filter: drop-shadow(0 0 16px var(--color-lantern)) brightness(1.2);
 }
 
-.ghost-krasue {
-  width: min(38vw, 210px);
-  filter: drop-shadow(0 0 14px rgb(226 59 44 / 0.45));
-}
-
-.ghost-krahang {
-  width: min(58vw, 300px);
-  filter: drop-shadow(0 16px 10px rgb(0 0 0 / 0.55));
-}
-
 .ghost-img {
   display: block;
   width: 100%;
@@ -73,6 +63,21 @@
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.ghost-krasue {
+  width: min(20vw, 112px);
+  filter: drop-shadow(0 0 10px rgb(226 59 44 / 0.45));
+}
+
+.ghost-krahang {
+  width: min(30vw, 156px);
+  filter: drop-shadow(0 10px 6px rgb(0 0 0 / 0.55));
+}
+
+.ghost-poop {
+  width: min(16vw, 92px);
+  filter: drop-shadow(0 6px 5px rgb(0 0 0 / 0.55));
 }
 
 .ghost-caught {
@@ -118,6 +123,10 @@
 
 .floater-krahang {
   color: var(--color-lantern);
+}
+
+.floater-poop {
+  color: var(--color-ash);
 }
 
 .arena.is-shaking {

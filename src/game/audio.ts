@@ -137,6 +137,57 @@ export function scream(pan = 0) {
   };
 }
 
+export function splat(pan = 0) {
+  const { ctx, sfx } = ensure();
+  const t = ctx.currentTime;
+  const dur = 0.22;
+  const frames = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < frames; i++) {
+    const env = Math.pow(1 - i / frames, 1.4);
+    data[i] = (Math.random() * 2 - 1) * env;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const lp = ctx.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.setValueAtTime(420, t);
+  lp.frequency.exponentialRampToValueAtTime(90, t + dur);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.7, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  const panner = ctx.createStereoPanner();
+  panner.pan.value = Math.max(-1, Math.min(1, pan));
+  const thump = ctx.createOscillator();
+  thump.type = "sine";
+  thump.frequency.setValueAtTime(160, t);
+  thump.frequency.exponentialRampToValueAtTime(48, t + dur);
+  const tg = ctx.createGain();
+  tg.gain.setValueAtTime(0.0001, t);
+  tg.gain.exponentialRampToValueAtTime(0.35, t + 0.01);
+  tg.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  noise.connect(lp);
+  lp.connect(g);
+  g.connect(panner);
+  thump.connect(tg);
+  tg.connect(panner);
+  panner.connect(sfx);
+  noise.start(t);
+  noise.stop(t + dur);
+  thump.start(t);
+  thump.stop(t + dur);
+  noise.onended = () => {
+    noise.disconnect();
+    lp.disconnect();
+    g.disconnect();
+    thump.disconnect();
+    tg.disconnect();
+    panner.disconnect();
+  };
+}
+
 export function startAmbience() {
   if (ambience) return;
   const { ctx, music } = ensure();

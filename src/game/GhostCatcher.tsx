@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Ghost, Play, RotateCcw, Timer, Trophy, Volume2, VolumeX } from "lucide-react";
-import { isMuted, scream, setMasterVolume, setMuted, startAmbience, unlockAudio } from "@/game/audio";
+import { isMuted, scream, setMasterVolume, setMuted, splat, startAmbience, unlockAudio } from "@/game/audio";
 import { loadSave, writeSave, type SaveData } from "@/game/storage";
 
-type Kind = "krasue" | "krahang";
+type Kind = "krasue" | "krahang" | "poop";
 type Phase = "idle" | "playing" | "ended";
 type Duration = 30 | 45 | 60;
 
@@ -68,7 +68,9 @@ type Frame = {
 const DURATIONS: Duration[] = [30, 45, 60];
 
 function pointsFor(kind: Kind) {
-  return kind === "krasue" ? 10 : 20;
+  if (kind === "krasue") return 10;
+  if (kind === "krahang") return 20;
+  return -10;
 }
 
 function spawnKrasue(id: number, center: boolean): GhostEnt {
@@ -81,6 +83,22 @@ function spawnKrasue(id: number, center: boolean): GhostEnt {
     vy: (Math.random() - 0.5) * 8,
     age: 0,
     ttl: 2.15 + Math.random() * 0.85,
+    phase: Math.random() * Math.PI * 2,
+    state: "alive",
+    catchAt: 0,
+  };
+}
+
+function spawnPoop(id: number): GhostEnt {
+  return {
+    id,
+    kind: "poop",
+    x: 18 + Math.random() * 64,
+    y: 20 + Math.random() * 52,
+    vx: (Math.random() - 0.5) * 9,
+    vy: (Math.random() - 0.5) * 6,
+    age: 0,
+    ttl: 2.4 + Math.random() * 0.8,
     phase: Math.random() * Math.PI * 2,
     state: "alive",
     catchAt: 0,
@@ -197,7 +215,7 @@ export function GhostCatcher() {
             g.age += dt;
             g.x += g.vx * dt;
             g.y += g.vy * dt;
-            if (g.kind === "krasue") {
+            if (g.kind !== "krahang") {
               if (g.x < 12 || g.x > 88) g.vx *= -1;
               if (g.y < 16 || g.y > 78) g.vy *= -1;
               g.x = Math.min(90, Math.max(10, g.x));
@@ -217,8 +235,15 @@ export function GhostCatcher() {
             s.next = Math.max(0.38, 1.05 - progress * 0.62) + Math.random() * 0.12;
             const id = ++s.seq;
             const first = s.spawned === 0;
-            const krahang = !first && Math.random() < 0.24 + progress * 0.28;
-            s.ghosts.push(krahang ? spawnKrahang(id, progress) : spawnKrasue(id, first));
+            const roll = Math.random();
+            const ent = first
+              ? spawnKrasue(id, true)
+              : roll < 0.3
+                ? spawnPoop(id)
+                : roll < 0.58
+                  ? spawnKrahang(id, progress)
+                  : spawnKrasue(id, false);
+            s.ghosts.push(ent);
             s.spawned += 1;
           }
         }
@@ -303,10 +328,10 @@ export function GhostCatcher() {
     g.state = "caught";
     g.catchAt = performance.now();
     const pts = pointsFor(g.kind);
-    s.score += pts;
+    s.score = Math.max(0, s.score + pts);
     if (g.kind === "krasue") s.krasue += 1;
-    else s.krahang += 1;
-    if (s.score > s.high) {
+    else if (g.kind === "krahang") s.krahang += 1;
+    if (pts > 0 && s.score > s.high) {
       s.high = s.score;
       persist(s);
     }
@@ -314,13 +339,14 @@ export function GhostCatcher() {
       id: ++s.seq,
       x: g.x,
       y: g.y,
-      text: `+${pts}`,
+      text: pts > 0 ? `+${pts}` : `${pts}`,
       kind: g.kind,
       born: g.catchAt,
     });
-    s.shakeUntil = g.catchAt + 170;
+    s.shakeUntil = g.catchAt + (pts < 0 ? 280 : 170);
     try {
-      scream((g.x / 100) * 2 - 1);
+      if (pts < 0) splat((g.x / 100) * 2 - 1);
+      else scream((g.x / 100) * 2 - 1);
     } catch {
       /* audio is optional juice */
     }
@@ -377,7 +403,7 @@ export function GhostCatcher() {
             label="คะแนนปัจจุบัน"
             value={frame.score}
             accent="text-ember"
-            hint={frame.breaking ? "สถิติใหม่" : "กระสือ 10 · กระหัง 20"}
+            hint={frame.breaking ? "สถิติใหม่" : "ห้ามแตะก้อน −10"}
           />
           <Stat
             icon={<Trophy className="size-4 text-lantern" />}
@@ -408,11 +434,11 @@ export function GhostCatcher() {
         <div className="vignette pointer-events-none absolute inset-0" />
 
         {frame.ghosts.map((g) => {
+          const bobAmp = g.kind === "krahang" ? 3 : g.kind === "poop" ? 6 : 8;
           const bob =
-            Math.sin(frame.tick * (g.kind === "krasue" ? 2.5 : 7) + g.phase) *
-            (g.kind === "krasue" ? 12 : 3);
+            Math.sin(frame.tick * (g.kind === "krahang" ? 7 : 2.3) + g.phase) * bobAmp;
           const tilt =
-            Math.sin(frame.tick * 1.6 + g.phase) * (g.kind === "krasue" ? 5 : 2) +
+            Math.sin(frame.tick * 1.6 + g.phase) * (g.kind === "poop" ? 8 : g.kind === "krasue" ? 5 : 2) +
             (g.kind === "krahang" ? Math.max(-10, Math.min(10, g.vx * 0.08)) : 0);
           const fade = g.state === "alive" ? Math.min(1, (g.ttl - g.age) / 0.32) : 1;
           return (
@@ -431,14 +457,22 @@ export function GhostCatcher() {
                 event.preventDefault();
                 catchGhost(g.id);
               }}
-              aria-label={g.kind === "krasue" ? "จับผีกระสือ" : "จับผีกระหัง"}
+              aria-label={
+                g.kind === "krasue" ? "จับผีกระสือ" : g.kind === "krahang" ? "จับผีกระหัง" : "อย่าแตะก้อนนี้"
+              }
               disabled={!playing || g.state !== "alive"}
             >
               <img
-                src={g.kind === "krasue" ? "/art/krasue.webp" : "/art/krahang.webp"}
+                src={
+                  g.kind === "krasue"
+                    ? "/art/krasue.webp"
+                    : g.kind === "krahang"
+                      ? "/art/krahang.webp"
+                      : "/art/poop.webp"
+                }
                 alt=""
                 draggable={false}
-                className={`ghost-img ${g.kind === "krasue" ? "ghost-krasue" : "ghost-krahang"}`}
+                className={`ghost-img ghost-${g.kind}`}
               />
             </button>
           );
@@ -446,10 +480,14 @@ export function GhostCatcher() {
 
         {frame.fx.map((fx) => (
           <div key={fx.id}>
-            <span className="spell" style={{ left: `${fx.x}%`, top: `${fx.y}%` }} />
-            <span className="spell spell-inner" style={{ left: `${fx.x}%`, top: `${fx.y}%` }} />
+            {fx.kind !== "poop" && (
+              <>
+                <span className="spell" style={{ left: `${fx.x}%`, top: `${fx.y}%` }} />
+                <span className="spell spell-inner" style={{ left: `${fx.x}%`, top: `${fx.y}%` }} />
+              </>
+            )}
             <span
-              className={`floater ${fx.kind === "krasue" ? "floater-krasue" : "floater-krahang"}`}
+              className={`floater floater-${fx.kind}`}
               style={{ left: `${fx.x}%`, top: `${fx.y}%` }}
             >
               {fx.text}
@@ -462,8 +500,8 @@ export function GhostCatcher() {
             <div className="w-full max-w-sm rounded-card border border-ash/30 bg-panel/90 p-4 text-center backdrop-blur-sm">
               <p className="font-display text-2xl leading-none text-bone">ออกไล่ผีกัน</p>
               <p className="mt-2 text-sm leading-relaxed text-ash">
-                แตะผีที่โผล่จากความมืด กระสือลอยช้าได้ 10 คะแนน กระหังบินผ่านเร็วได้ 20
-                จับไม่ทันมันจะหายไปเอง
+                แตะผีที่โผล่จากความมืด กระสือได้ 10 กระหังได้ 20 อย่าแตะก้อนอุจจาระ โดนแล้วลบ 10
+                คะแนน จับไม่ทันมันจะหายไปเอง
               </p>
               <button
                 type="button"
