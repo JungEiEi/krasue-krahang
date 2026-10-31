@@ -25,7 +25,7 @@ function pagesOutput(): Plugin {
       for (const file of ["krasue.webp", "krahang.webp", "poop.webp", "village-night.webp"]) {
         cpSync(join("public/art", file), join(dir, "art", file));
       }
-      for (const file of ["favicon.svg", "og.jpg", "robots.txt", "x-banner.jpg", ".nojekyll"]) {
+      for (const file of ["favicon.svg", "og.jpg", "robots.txt", "x-banner.jpg", ".nojekyll", "game-cover.jpg"]) {
         cpSync(join("public", file), join(dir, file));
       }
     },

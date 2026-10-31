@@ -1,5 +1,7 @@
 # เกมจับผีกระสือและผีกระหัง
 
+![หน้าปกเกมจับผี](public/game-cover.jpg)
+
 เล่นได้ที่ [jungeiei.github.io/krasue-krahang](https://jungeiei.github.io/krasue-krahang/)
 
 พุชขึ้นสาขา `main` แล้ว Actions จะอัปเดตหน้าเกมบน GitHub Pages ให้เอง
